@@ -1,0 +1,81 @@
+@php
+    $buscarQ = ($buscar ?? '') !== '' ? ['buscar' => $buscar] : [];
+@endphp
+<div id="{{ dom_id($cliente) }}" class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+    <div class="flex items-start gap-2 sm:items-center">
+        <details class="group min-w-0 flex-1">
+            <summary class="cursor-pointer list-none select-none rounded-lg p-1 -m-1 hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+                <span class="flex items-start gap-2">
+                    <span class="min-w-0 flex-1 text-left">
+                        <span class="block truncate text-base font-semibold text-slate-900">{{ $cliente->nombre_completo }}</span>
+                        <span class="mt-0.5 block text-xs text-slate-500">DNI/RUC: {{ $cliente->dni_ruc }}</span>
+                    </span>
+                    <span class="mt-0.5 shrink-0 text-slate-400 transition-transform group-open:rotate-180" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </span>
+                </span>
+            </summary>
+
+            <div class="mt-3 border-t border-slate-100 pt-3">
+                <dl class="space-y-2 text-sm text-slate-600">
+                    <div class="flex justify-between gap-2">
+                        <dt class="text-slate-400">Celular</dt>
+                        <dd class="text-right font-medium text-slate-800">{{ $cliente->nro_celular }}</dd>
+                    </div>
+                    <div class="flex justify-between gap-2">
+                        <dt class="text-slate-400">Correo</dt>
+                        <dd class="min-w-0 wrap-break-word text-right">{{ $cliente->correo ?: '-' }}</dd>
+                    </div>
+                    <div class="flex justify-between gap-2">
+                        <dt class="text-slate-400">Empresa</dt>
+                        <dd class="min-w-0 wrap-break-word text-right">{{ $cliente->empresa ?: '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-slate-400">Direccion</dt>
+                        <dd class="mt-0.5 wrap-break-word text-slate-800">{{ $cliente->direccion }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </details>
+
+        <div class="flex shrink-0 gap-1.5 self-start pt-0.5 sm:self-center">
+            <a href="{{ route('clientes.visitas.index', $cliente) }}"
+               class="inline-flex items-center justify-center rounded-md border border-sky-300 p-2 text-sky-600 hover:bg-sky-50"
+               aria-label="Ver visitas del cliente"
+               title="Ver visitas">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+            </a>
+            <a href="{{ route('clientes.visitas.create', array_merge(['cliente' => $cliente], $buscarQ)) }}"
+               data-turbo-frame="modal"
+               class="inline-flex items-center justify-center rounded-md border border-indigo-300 p-2 text-indigo-600 hover:bg-indigo-50"
+               aria-label="Nueva visita"
+               title="Nueva visita">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </a>
+            <a href="{{ route('clientes.edit', array_merge(['cliente' => $cliente], $buscarQ)) }}"
+               data-turbo-frame="modal"
+               class="inline-flex items-center justify-center rounded-md border border-slate-300 p-2 text-slate-600 hover:bg-slate-100"
+               aria-label="Editar cliente"
+               title="Editar">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+            </a>
+            <a href="{{ route('clientes.delete', array_merge(['cliente' => $cliente], $buscarQ)) }}"
+               data-turbo-frame="modal"
+               class="inline-flex items-center justify-center rounded-md border border-rose-300 p-2 text-rose-600 hover:bg-rose-50"
+               aria-label="Eliminar cliente"
+               title="Eliminar">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
