@@ -10,6 +10,12 @@ use Illuminate\Validation\Rule;
 
 class ClienteConsultaDocumentoController extends Controller
 {
+    /**
+     * Consulta datos de DNI o RUC usando ApiPeru.
+     *
+     * Esta acción se usa desde el formulario de clientes para autocompletar
+     * campos como nombre completo, empresa y dirección.
+     */
     public function __invoke(Request $request, ApiPeruDevService $apiPeruDev): JsonResponse
     {
         $validated = $request->validate([
@@ -20,21 +26,23 @@ class ClienteConsultaDocumentoController extends Controller
         $numero = $validated['documento'];
         $tipo = $validated['tipo_doc'];
 
+        // Validación exacta según el tipo de documento peruano.
         if ($tipo === 'dni' && strlen($numero) !== 8) {
-            return response()->json(['message' => 'El DNI debe tener 8 digitos.'], 422);
+            return response()->json(['message' => 'El DNI debe tener 8 dígitos.'], 422);
         }
 
         if ($tipo === 'ruc' && strlen($numero) !== 11) {
-            return response()->json(['message' => 'El RUC debe tener 11 digitos.'], 422);
+            return response()->json(['message' => 'El RUC debe tener 11 dígitos.'], 422);
         }
 
+        // Selecciona el endpoint correspondiente del servicio ApiPeru.
         $resultado = $tipo === 'ruc'
             ? $apiPeruDev->consultarRuc($numero)
             : $apiPeruDev->consultarDni($numero);
 
         if (! ($resultado['success'] ?? false)) {
             return response()->json([
-                'message' => $resultado['message'] ?? 'Respuesta invalida desde ApiPeru.',
+                'message' => $resultado['message'] ?? 'Respuesta inválida desde ApiPeru.',
             ], 422);
         }
 
@@ -45,6 +53,7 @@ class ClienteConsultaDocumentoController extends Controller
             ], 422);
         }
 
+        // Para RUC se intenta completar razón social, empresa y dirección fiscal.
         if ($tipo === 'ruc') {
             $nombre = trim((string) Arr::get($data, 'nombre_o_razon_social', ''));
             $direccionRaw = Arr::get($data, 'direccion_completa') ?: Arr::get($data, 'direccion', '');
@@ -60,6 +69,7 @@ class ClienteConsultaDocumentoController extends Controller
             ]);
         }
 
+        // Para DNI solo se completa el nombre completo de la persona.
         $nombreCompleto = trim((string) Arr::get($data, 'nombre_completo', ''));
 
         return response()->json([
@@ -71,6 +81,8 @@ class ClienteConsultaDocumentoController extends Controller
     }
 
     /**
+     * Construye un resumen corto con el estado y la condición SUNAT.
+     *
      * @param  array<string, mixed>  $data
      */
     private function sunatSummary(array $data): ?string
