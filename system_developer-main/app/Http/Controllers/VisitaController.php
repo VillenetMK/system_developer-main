@@ -10,6 +10,9 @@ use Illuminate\Validation\Rule;
 
 class VisitaController extends Controller
 {
+    /**
+     * Muestra todas las visitas registradas para un cliente.
+     */
     public function index(Cliente $cliente): Response
     {
         $visitas = $this->visitasOrdenadas($cliente);
@@ -17,6 +20,11 @@ class VisitaController extends Controller
         return response()->view('visitas.index', compact('cliente', 'visitas'));
     }
 
+    /**
+     * Muestra el formulario para crear una visita del cliente.
+     *
+     * La dirección se precarga con la dirección registrada en el cliente.
+     */
     public function create(Request $request, Cliente $cliente): Response
     {
         $buscar = trim((string) $request->input('buscar', ''));
@@ -29,29 +37,34 @@ class VisitaController extends Controller
         return response()->view('visitas.create', compact('cliente', 'visita', 'buscar'));
     }
 
+    /**
+     * Muestra el detalle de una visita dentro de un modal.
+     */
     public function showModal(Cliente $cliente, Visita $visita): Response
     {
-        if ((int) $visita->cliente_id !== (int) $cliente->id) {
-            abort(404);
-        }
+        $this->validarPertenencia($cliente, $visita);
 
         return response()->view('visitas.show_modal', compact('cliente', 'visita'));
     }
 
+    /**
+     * Muestra el formulario modal para editar observaciones de una visita.
+     */
     public function editObservaciones(Cliente $cliente, Visita $visita): Response
     {
-        if ((int) $visita->cliente_id !== (int) $cliente->id) {
-            abort(404);
-        }
+        $this->validarPertenencia($cliente, $visita);
 
         return response()->view('visitas.observaciones_modal', compact('cliente', 'visita'));
     }
 
+    /**
+     * Actualiza las observaciones de una visita.
+     *
+     * Si el campo llega vacío, se guarda como null para mantener limpia la base de datos.
+     */
     public function updateObservaciones(Request $request, Cliente $cliente, Visita $visita)
     {
-        if ((int) $visita->cliente_id !== (int) $cliente->id) {
-            abort(404);
-        }
+        $this->validarPertenencia($cliente, $visita);
 
         $validated = $request->validate([
             'observaciones' => ['nullable', 'string', 'max:10000'],
@@ -77,6 +90,9 @@ class VisitaController extends Controller
             ->with('status', 'Observaciones guardadas correctamente.');
     }
 
+    /**
+     * Registra una nueva visita para el cliente indicado.
+     */
     public function store(Request $request, Cliente $cliente)
     {
         $buscar = trim((string) $request->input('buscar', ''));
@@ -97,11 +113,14 @@ class VisitaController extends Controller
             ->with('status', "Visita registrada para {$cliente->nombre_completo}.");
     }
 
+    /**
+     * Cambia el estado de una visita.
+     *
+     * Estados permitidos: en proceso, cancelada y culminada.
+     */
     public function updateEstado(Request $request, Cliente $cliente, Visita $visita)
     {
-        if ((int) $visita->cliente_id !== (int) $cliente->id) {
-            abort(404);
-        }
+        $this->validarPertenencia($cliente, $visita);
 
         $validated = $request->validate([
             'estado' => ['required', 'string', Rule::in(['en proceso', 'cancelada', 'culminada'])],
@@ -116,6 +135,9 @@ class VisitaController extends Controller
             ->with('status', 'Estado de visita actualizado correctamente.');
     }
 
+    /**
+     * Valida los datos necesarios para crear una visita.
+     */
     private function validatedData(Request $request): array
     {
         return $request->validate([
@@ -128,6 +150,8 @@ class VisitaController extends Controller
     }
 
     /**
+     * Devuelve las visitas del cliente ordenadas desde la más reciente.
+     *
      * @return \Illuminate\Database\Eloquent\Collection<int, Visita>
      */
     private function visitasOrdenadas(Cliente $cliente)
@@ -136,5 +160,15 @@ class VisitaController extends Controller
             ->orderByDesc('dia')
             ->orderByDesc('hora_estimada')
             ->get();
+    }
+
+    /**
+     * Evita acceder a una visita que no pertenece al cliente actual.
+     */
+    private function validarPertenencia(Cliente $cliente, Visita $visita): void
+    {
+        if ((int) $visita->cliente_id !== (int) $cliente->id) {
+            abort(404);
+        }
     }
 }
