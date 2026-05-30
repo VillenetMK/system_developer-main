@@ -9,6 +9,8 @@ use Throwable;
 class ApiPeruDevService
 {
     /**
+     * Consulta los datos de una persona natural por DNI.
+     *
      * @return array{success: bool, data: ?array<string, mixed>, message: ?string}
      */
     public function consultarDni(string $dni): array
@@ -17,6 +19,8 @@ class ApiPeruDevService
     }
 
     /**
+     * Consulta los datos de una persona o empresa por RUC.
+     *
      * @return array{success: bool, data: ?array<string, mixed>, message: ?string}
      */
     public function consultarRuc(string $ruc): array
@@ -25,6 +29,11 @@ class ApiPeruDevService
     }
 
     /**
+     * Envía la petición HTTP a ApiPeru y normaliza la respuesta.
+     *
+     * El método devuelve siempre la misma estructura para que los controladores
+     * no dependan directamente del formato exacto de la API externa.
+     *
      * @param  array<string, string|int|float|null>  $payload
      * @return array{success: bool, data: ?array<string, mixed>, message: ?string}
      */
@@ -33,7 +42,7 @@ class ApiPeruDevService
         $token = (string) config('services.apiperu.token');
 
         if ($token === '') {
-            return ['success' => false, 'data' => null, 'message' => 'La API ApiPeru no esta configurada (APIPERU_DEV_TOKEN).'];
+            return ['success' => false, 'data' => null, 'message' => 'La API ApiPeru no está configurada (APIPERU_DEV_TOKEN).'];
         }
 
         $base = rtrim((string) config('services.apiperu.base_url', 'https://apiperu.dev'), '/');
@@ -47,6 +56,7 @@ class ApiPeruDevService
                 ->timeout((int) config('services.apiperu.timeout', 25))
                 ->connectTimeout((int) config('services.apiperu.connect_timeout', 12));
 
+            // Permite desactivar SSL en entornos locales donde el certificado falle.
             if (! $verifySsl) {
                 $request = $request->withOptions(['verify' => false]);
             }
@@ -75,6 +85,7 @@ class ApiPeruDevService
                 'message' => is_string(data_get($decoded, 'message')) ? data_get($decoded, 'message') : null,
             ];
         } catch (Throwable $e) {
+            // Se registra el error técnico, pero al usuario se le muestra un mensaje simple.
             Log::warning('ApiPeru error: '.$e->getMessage());
 
             return ['success' => false, 'data' => null, 'message' => 'No se pudo conectar con ApiPeru. Intenta de nuevo.'];
