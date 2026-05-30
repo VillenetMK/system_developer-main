@@ -9,12 +9,19 @@ use Illuminate\Http\Response;
 
 class CalendarioController extends Controller
 {
+    /**
+     * Muestra el calendario mensual de visitas.
+     *
+     * Permite filtrar por mes y por estado de visita. Si los parámetros no son
+     * válidos, se usan valores seguros por defecto.
+     */
     public function index(Request $request): Response
     {
         $monthParam = (string) $request->query('month', now()->format('Y-m'));
         $estadoParam = (string) $request->query('estado', 'todos');
         $monthDate = now()->startOfMonth();
 
+        // Valida el formato YYYY-MM antes de intentar convertirlo a fecha.
         if (preg_match('/^\d{4}-\d{2}$/', $monthParam) === 1) {
             $parsedMonth = Carbon::createFromFormat('Y-m', $monthParam);
             if ($parsedMonth !== false) {
@@ -28,6 +35,7 @@ class CalendarioController extends Controller
         $estadoOptions = ['todos', 'en proceso', 'cancelada', 'culminada'];
         $selectedEstado = in_array($estadoParam, $estadoOptions, true) ? $estadoParam : 'todos';
 
+        // Consulta las visitas del mes seleccionado e incluye el cliente relacionado.
         $visitasQuery = Visita::query()
             ->with('cliente')
             ->whereBetween('dia', [$monthStart->toDateString(), $monthEnd->toDateString()]);
@@ -36,12 +44,14 @@ class CalendarioController extends Controller
             $visitasQuery->where('estado', $selectedEstado);
         }
 
+        // Agrupa las visitas por fecha para mostrarlas en la celda del calendario.
         $visitasByDate = $visitasQuery
             ->orderBy('dia')
             ->orderBy('hora_estimada')
             ->get()
             ->groupBy(fn (Visita $visita) => $visita->dia->toDateString());
 
+        // Se empieza en lunes y se termina en domingo para formar semanas completas.
         $calendarStart = $monthStart->copy()->startOfWeek(Carbon::MONDAY);
         $calendarEnd = $monthEnd->copy()->endOfWeek(Carbon::SUNDAY);
 
@@ -69,7 +79,7 @@ class CalendarioController extends Controller
             'monthDate' => $monthDate,
             'prevMonth' => $monthDate->copy()->subMonthNoOverflow()->format('Y-m'),
             'nextMonth' => $monthDate->copy()->addMonthNoOverflow()->format('Y-m'),
-            'weekDays' => ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'],
+            'weekDays' => ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
             'weeks' => $weeks,
             'selectedEstado' => $selectedEstado,
         ]);
