@@ -10,6 +10,6 @@ Destino autorizado:
 
 Usar estos identificadores explicitos en consultas y migraciones. No crear esquemas, tablas, roles o permisos en EcoSphere, Sistema Municipal ni otras bases existentes como alternativa al aprovisionamiento de Teralinde.
 
-La limpieza del esquema agregado anteriormente en EcoSphere requiere autorizacion expresa y acotada del propietario. No inferir esa autorizacion de una instruccion para trabajar en Teralinde.
+El propietario autorizo expresamente retirar de EcoSphere solo el esquema `teralinde_crm` y el rol `teralinde_crm_app`. La limpieza se completo y verifico el 13 de octubre de 2026 (Peru). Esa autorizacion puntual ya esta consumida: no habilita nuevas escrituras en EcoSphere ni en otras bases.
 
 Guardar cambios de estructura como codigo, comprobar las operaciones y permisos pertinentes y mantener secretos fuera de Git.

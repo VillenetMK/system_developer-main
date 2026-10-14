@@ -18,13 +18,17 @@ La base propia de Teralinde ya esta creada y verificada en Neon, separada de Eco
 | Rol operador | `teralinde_crm_owner` |
 | Rol del futuro backend | `teralinde_crm_app` |
 
-La creacion y todas las consultas o cambios SQL de esta fase se dirigieron exclusivamente a este proyecto nuevo. No se modificaron bases Supabase ni otros proyectos Neon.
+La creacion y las pruebas de Neon se dirigieron exclusivamente a este proyecto nuevo. Despues, con autorizacion especifica del propietario, se retiraron de EcoSphere los objetos del intento anterior; consultar la limpieza verificada a continuacion.
 
 ## Regla del propietario
 
 Teralinde tiene su propio proyecto y su propia base. No crear esquemas, tablas, roles o permisos en bases de otros proyectos para reutilizar sus recursos. Usar siempre los IDs explicitos de la tabla anterior; no confiar en el proyecto por defecto de una herramienta.
 
-Lo añadido antes en EcoSphere sigue pendiente de retirada. Su limpieza requiere autorizacion especifica para esa base y no forma parte de esta creacion independiente.
+Lo añadido antes en EcoSphere ya se retiro con autorizacion expresa y limitada del propietario. Se eliminaron solo las 11 tablas del esquema `teralinde_crm`, el esquema y su rol `teralinde_crm_app`, sin `CASCADE`. Antes se confirmo que las tablas de negocio estaban vacias y que las unicas seis filas eran el historial inicial de Laravel.
+
+La consulta posterior confirmo que el esquema y el rol ya no existen. Las huellas de las relaciones, politicas RLS y privilegios predeterminados ajenos a Teralinde coincidieron antes y despues. Se conservaron las entradas de creacion y retirada en el historial de migraciones de Supabase, para trazabilidad. La migracion de limpieza es `20261014001928_remove_misplaced_teralinde_crm`; su SQL queda en `database/history/20261014001928_remove_misplaced_teralinde_crm.sql` como registro historico, no como instruccion para ejecutarla de nuevo.
+
+La autorizacion de limpieza ya fue completada y no permite nuevas modificaciones en EcoSphere.
 
 ## Estructura aplicada
 
