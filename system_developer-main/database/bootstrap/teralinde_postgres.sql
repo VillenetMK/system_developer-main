@@ -1,10 +1,14 @@
+DO $destination$ BEGIN IF current_database() <> 'teralinde_crm' THEN RAISE EXCEPTION 'Este script solo admite la base independiente teralinde_crm'; END IF; END $destination$;
+
 -- Baseline de Teralinde CRM para una base PostgreSQL NUEVA y vacia.
--- Preparado para Neon; pendiente de verificar y aplicar en el proyecto nuevo.
+-- Aplicado exclusivamente al proyecto Neon frosty-sky-96314663, base teralinde_crm.
 -- Origen: VillenetMK/system_developer-main, main 0889c36749afec2b9f2007b8a4b699c70f447691.
 -- Sin registros comerciales, cuentas de acceso ni contraseñas.
 CREATE ROLE teralinde_crm_app NOLOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+GRANT teralinde_crm_app TO teralinde_crm_owner WITH SET TRUE;
 CREATE SCHEMA teralinde_crm;
 REVOKE ALL ON SCHEMA teralinde_crm FROM PUBLIC;
+GRANT CONNECT ON DATABASE teralinde_crm TO teralinde_crm_app;
 GRANT USAGE ON SCHEMA teralinde_crm TO teralinde_crm_app;
 ALTER ROLE teralinde_crm_app SET search_path = teralinde_crm;
 ALTER ROLE teralinde_crm_app SET timezone = 'UTC';
@@ -122,6 +126,7 @@ DECLARE table_name text;
 BEGIN
  FOR table_name IN SELECT tablename FROM pg_tables WHERE schemaname='teralinde_crm' LOOP
   EXECUTE format('ALTER TABLE teralinde_crm.%I ENABLE ROW LEVEL SECURITY',table_name);
+  EXECUTE format('ALTER TABLE teralinde_crm.%I FORCE ROW LEVEL SECURITY',table_name);
   IF table_name='migrations' THEN
    EXECUTE format('CREATE POLICY backend_read ON teralinde_crm.%I FOR SELECT TO teralinde_crm_app USING (true)',table_name);
   ELSE
